@@ -260,23 +260,31 @@ import AVFoundation
     let dataSize = totalSamples * channels * bitsPerSample / 8
     let chunkSize = 36 + dataSize
 
+    // Helper: convert a fixed-width integer to little-endian bytes.
+    func leBytes<T: FixedWidthInteger>(_ value: T) -> [UInt8] {
+      var v = value.littleEndian
+      return withUnsafeBytes(of: &v) { raw in
+        Array(raw.bindMemory(to: UInt8.self))
+      }
+    }
+
     var data = Data()
     // RIFF header
     data.append(contentsOf: [UInt8]("RIFF".utf8))
-    data.append(contentsOf: withUnsafeBytes(of: UInt32(chunkSize).littleEndian) { Array($0) })
+    data.append(contentsOf: leBytes(UInt32(chunkSize)))
     data.append(contentsOf: [UInt8]("WAVE".utf8))
     // fmt chunk
     data.append(contentsOf: [UInt8]("fmt ".utf8))
-    data.append(contentsOf: withUnsafeBytes(of: UInt32(16).littleEndian) { Array($0) })
-    data.append(contentsOf: withUnsafeBytes(of: UInt16(1).littleEndian) { Array($0) })  // PCM
-    data.append(contentsOf: withUnsafeBytes(of: UInt16(channels).littleEndian) { Array($0) })
-    data.append(contentsOf: withUnsafeBytes(of: UInt32(sampleRate).littleEndian) { Array($0) })
-    data.append(contentsOf: withUnsafeBytes(of: UInt32(byteRate).littleEndian) { Array($0) })
-    data.append(contentsOf: withUnsafeBytes(of: UInt16(channels * bitsPerSample / 8).littleEndian) { Array($0) })
-    data.append(contentsOf: withUnsafeBytes(of: UInt16(bitsPerSample).littleEndian) { Array($0) })
+    data.append(contentsOf: leBytes(UInt32(16)))
+    data.append(contentsOf: leBytes(UInt16(1)))  // PCM
+    data.append(contentsOf: leBytes(UInt16(channels)))
+    data.append(contentsOf: leBytes(UInt32(sampleRate)))
+    data.append(contentsOf: leBytes(UInt32(byteRate)))
+    data.append(contentsOf: leBytes(UInt16(channels * bitsPerSample / 8)))
+    data.append(contentsOf: leBytes(UInt16(bitsPerSample)))
     // data chunk
     data.append(contentsOf: [UInt8]("data".utf8))
-    data.append(contentsOf: withUnsafeBytes(of: UInt32(dataSize).littleEndian) { Array($0) })
+    data.append(contentsOf: leBytes(UInt32(dataSize)))
     data.append(Data(count: dataSize))  // silence
     return data
   }
