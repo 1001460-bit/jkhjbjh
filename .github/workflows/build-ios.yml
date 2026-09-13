@@ -36,6 +36,23 @@ jobs:
         working-directory: app/ios
         run: pod install --repo-update
 
+      - name: Fix bonsoir_darwin compilation (missing import Foundation)
+        run: |
+          # bonsoir_darwin 6.1.0 has a known bug: BonjourService.swift uses
+          # JSONSerialization without importing Foundation. Patch it in-place.
+          BONJOUR_FILE=$(find "$HOME/.pub-cache" -path "*/bonsoir_darwin*/Sources/bonsoir_darwin/BonjourService.swift" 2>/dev/null | head -1)
+          if [ -n "$BONJOUR_FILE" ] && [ -f "$BONJOUR_FILE" ]; then
+            echo "Patching: $BONJOUR_FILE"
+            if ! grep -q "import Foundation" "$BONJOUR_FILE"; then
+              sed -i '' '1s/^/import Foundation\n/' "$BONJOUR_FILE"
+              echo "Added import Foundation"
+            else
+              echo "Already has import Foundation"
+            fi
+          else
+            echo "WARNING: BonjourService.swift not found, skipping patch"
+          fi
+
       - name: Build Flutter iOS (release, no codesign)
         working-directory: app
         run: |
