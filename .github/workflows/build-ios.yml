@@ -39,14 +39,14 @@ jobs:
       - name: Build Flutter iOS (release, no codesign)
         working-directory: app
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --flavor intl --no-codesign
 
       - name: Archive (unsigned)
         working-directory: app/ios
         run: |
           xcodebuild -workspace Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
+            -scheme intl \
+            -configuration Release-intl \
             -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
             archive \
             CODE_SIGNING_ALLOWED=NO \
