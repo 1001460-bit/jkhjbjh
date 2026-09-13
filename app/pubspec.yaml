@@ -70,7 +70,7 @@ dependencies:
   qr_flutter: ^4.1.0
   share_plus: ^13.0.0
   video_player: ^2.9.2
-  pdfrx: ^1.0.92
+  pdfrx: 1.0.92
   bonsoir: ^6.0.1
   flutter_riverpod: ^2.6.1
   connectivity_plus: ^7.0.0
