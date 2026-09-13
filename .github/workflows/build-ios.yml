@@ -38,31 +38,32 @@ jobs:
 
       - name: Fix bonsoir_darwin compilation (missing import Foundation)
         run: |
-          # bonsoir_darwin 6.1.0 has a known bug: BonjourService.swift uses
-          # JSONSerialization without importing Foundation. Patch it in-place.
-          # Use the exact path from the build error for reliability.
-          BONJOUR_FILE="/Users/runner/.pub-cache/hosted/pub.dev/bonsoir_darwin-6.1.0/darwin/bonsoir_darwin/Sources/bonsoir_darwin/BonjourService.swift"
-          echo "Looking for: $BONJOUR_FILE"
-          ls -la "$BONJOUR_FILE" 2>&1 || echo "File not found at exact path, searching..."
-          # Fallback: search if exact path doesn't match (different version)
-          if [ ! -f "$BONJOUR_FILE" ]; then
-            BONJOUR_FILE=$(find /Users/runner/.pub-cache -name "BonjourService.swift" -path "*bonsoir*" 2>/dev/null | head -1)
-            echo "Found via search: $BONJOUR_FILE"
+          # bonsoir_darwin has a known bug: some Swift files use JSONSerialization
+          # without importing Foundation. Patch ALL .swift files in the package.
+          BONJOUR_DIR="/Users/runner/.pub-cache/hosted/pub.dev/bonsoir_darwin-6.1.0"
+          echo "Looking in: $BONJOUR_DIR"
+          if [ ! -d "$BONJOUR_DIR" ]; then
+            echo "Directory not found, searching..."
+            BONJOUR_DIR=$(find /Users/runner/.pub-cache -type d -name "bonsoir_darwin-*" 2>/dev/null | head -1)
+            echo "Found via search: $BONJOUR_DIR"
           fi
-          if [ -n "$BONJOUR_FILE" ] && [ -f "$BONJOUR_FILE" ]; then
-            echo "=== Before patch (first 5 lines) ==="
-            head -5 "$BONJOUR_FILE"
-            if ! head -5 "$BONJOUR_FILE" | grep -q "import Foundation"; then
-              { echo "import Foundation"; cat "$BONJOUR_FILE"; } > /tmp/bonjour_patched.swift
-              mv /tmp/bonjour_patched.swift "$BONJOUR_FILE"
-              echo "=== Patched successfully ==="
-              head -5 "$BONJOUR_FILE"
-            else
-              echo "Already has import Foundation, no patch needed"
-            fi
+          if [ -n "$BONJOUR_DIR" ] && [ -d "$BONJOUR_DIR" ]; then
+            echo "=== Patching all .swift files that use JSONSerialization ==="
+            find "$BONJOUR_DIR" -name "*.swift" -type f | while read -r f; do
+              if grep -q "JSONSerialization" "$f" && ! head -10 "$f" | grep -q "import Foundation"; then
+                echo "Patching: $f"
+                { echo "import Foundation"; cat "$f"; } > /tmp/bonjour_patched.swift
+                mv /tmp/bonjour_patched.swift "$f"
+                head -3 "$f"
+              fi
+            done
+            echo "=== Patch complete ==="
+            # Also list all files that contain JSONSerialization for debugging
+            echo "=== Files containing JSONSerialization ==="
+            grep -rl "JSONSerialization" "$BONJOUR_DIR" --include="*.swift" 2>/dev/null || echo "None found"
           else
-            echo "ERROR: Could not find BonjourService.swift"
-            find /Users/runner/.pub-cache -name "*.swift" -path "*bonsoir*" 2>/dev/null | head -20
+            echo "ERROR: bonsoir_darwin directory not found"
+            find /Users/runner/.pub-cache -type d -name "*bonsoir*" 2>/dev/null | head -10
           fi
 
       - name: Build Flutter iOS (release, no codesign)
