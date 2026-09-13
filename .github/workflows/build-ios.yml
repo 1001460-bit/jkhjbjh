@@ -40,18 +40,24 @@ jobs:
         run: |
           # bonsoir_darwin 6.1.0 has a known bug: BonjourService.swift uses
           # JSONSerialization without importing Foundation. Patch it in-place.
-          BONJOUR_FILE=$(find "$HOME/.pub-cache" -path "*/bonsoir_darwin*/Sources/bonsoir_darwin/BonjourService.swift" 2>/dev/null | head -1)
+          set +e
+          BONJOUR_FILE=$(find ~/.pub-cache -name "BonjourService.swift" -path "*bonsoir_darwin*" 2>/dev/null | head -1)
+          echo "Found file: $BONJOUR_FILE"
           if [ -n "$BONJOUR_FILE" ] && [ -f "$BONJOUR_FILE" ]; then
-            echo "Patching: $BONJOUR_FILE"
-            if ! grep -q "import Foundation" "$BONJOUR_FILE"; then
-              sed -i '' '1s/^/import Foundation\n/' "$BONJOUR_FILE"
-              echo "Added import Foundation"
+            if ! head -5 "$BONJOUR_FILE" | grep -q "import Foundation"; then
+              # Prepend import Foundation using a temp file (more reliable than sed)
+              { echo "import Foundation"; cat "$BONJOUR_FILE"; } > /tmp/bonjour_patched.swift
+              mv /tmp/bonjour_patched.swift "$BONJOUR_FILE"
+              echo "Patched successfully"
+              head -3 "$BONJOUR_FILE"
             else
               echo "Already has import Foundation"
             fi
           else
-            echo "WARNING: BonjourService.swift not found, skipping patch"
+            echo "WARNING: BonjourService.swift not found"
+            find ~/.pub-cache -name "BonjourService.swift" 2>/dev/null || true
           fi
+          set -e
 
       - name: Build Flutter iOS (release, no codesign)
         working-directory: app
