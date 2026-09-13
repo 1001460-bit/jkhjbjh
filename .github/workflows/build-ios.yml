@@ -40,24 +40,30 @@ jobs:
         run: |
           # bonsoir_darwin 6.1.0 has a known bug: BonjourService.swift uses
           # JSONSerialization without importing Foundation. Patch it in-place.
-          set +e
-          BONJOUR_FILE=$(find ~/.pub-cache -name "BonjourService.swift" -path "*bonsoir_darwin*" 2>/dev/null | head -1)
-          echo "Found file: $BONJOUR_FILE"
+          # Use the exact path from the build error for reliability.
+          BONJOUR_FILE="/Users/runner/.pub-cache/hosted/pub.dev/bonsoir_darwin-6.1.0/darwin/bonsoir_darwin/Sources/bonsoir_darwin/BonjourService.swift"
+          echo "Looking for: $BONJOUR_FILE"
+          ls -la "$BONJOUR_FILE" 2>&1 || echo "File not found at exact path, searching..."
+          # Fallback: search if exact path doesn't match (different version)
+          if [ ! -f "$BONJOUR_FILE" ]; then
+            BONJOUR_FILE=$(find /Users/runner/.pub-cache -name "BonjourService.swift" -path "*bonsoir*" 2>/dev/null | head -1)
+            echo "Found via search: $BONJOUR_FILE"
+          fi
           if [ -n "$BONJOUR_FILE" ] && [ -f "$BONJOUR_FILE" ]; then
+            echo "=== Before patch (first 5 lines) ==="
+            head -5 "$BONJOUR_FILE"
             if ! head -5 "$BONJOUR_FILE" | grep -q "import Foundation"; then
-              # Prepend import Foundation using a temp file (more reliable than sed)
               { echo "import Foundation"; cat "$BONJOUR_FILE"; } > /tmp/bonjour_patched.swift
               mv /tmp/bonjour_patched.swift "$BONJOUR_FILE"
-              echo "Patched successfully"
-              head -3 "$BONJOUR_FILE"
+              echo "=== Patched successfully ==="
+              head -5 "$BONJOUR_FILE"
             else
-              echo "Already has import Foundation"
+              echo "Already has import Foundation, no patch needed"
             fi
           else
-            echo "WARNING: BonjourService.swift not found"
-            find ~/.pub-cache -name "BonjourService.swift" 2>/dev/null || true
+            echo "ERROR: Could not find BonjourService.swift"
+            find /Users/runner/.pub-cache -name "*.swift" -path "*bonsoir*" 2>/dev/null | head -20
           fi
-          set -e
 
       - name: Build Flutter iOS (release, no codesign)
         working-directory: app
