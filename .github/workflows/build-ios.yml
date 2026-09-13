@@ -1,0 +1,95 @@
+name: Build iOS IPA (Unsigned)
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'app/**'
+      - '.github/workflows/build-ios.yml'
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods
+          pod setup
+
+      - name: Flutter pub get
+        working-directory: app
+        run: flutter pub get
+
+      - name: Pod install
+        working-directory: app/ios
+        run: pod install --repo-update
+
+      - name: Build Flutter iOS (release, no codesign)
+        working-directory: app
+        run: |
+          flutter build ios --release --no-codesign
+
+      - name: Archive (unsigned)
+        working-directory: app/ios
+        run: |
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            || true
+
+      - name: Package IPA (unsigned, for jailbroken devices)
+        run: |
+          ARCHIVE="$RUNNER_TEMP/Runner.xcarchive"
+          PAYLOAD="$RUNNER_TEMP/Payload"
+          IPA_DIR="$GITHUB_WORKSPACE/build_output"
+          IPA_NAME="ShrimpSend-unsigned.ipa"
+
+          mkdir -p "$PAYLOAD" "$IPA_DIR"
+
+          # If xcodebuild archive succeeded, use the .app from archive;
+          # otherwise fall back to flutter build output.
+          if [ -d "$ARCHIVE/Products/Applications/Runner.app" ]; then
+            cp -R "$ARCHIVE/Products/Applications/Runner.app" "$PAYLOAD/"
+          elif [ -d "$GITHUB_WORKSPACE/app/build/ios/iphoneos/Runner.app" ]; then
+            cp -R "$GITHUB_WORKSPACE/app/build/ios/iphoneos/Runner.app" "$PAYLOAD/"
+          else
+            echo "ERROR: Could not find Runner.app"
+            find "$GITHUB_WORKSPACE/app/build" -name "*.app" 2>/dev/null || true
+            exit 1
+          fi
+
+          # Remove code signature (jailbroken devices don't need it)
+          rm -rf "$PAYLOAD/Runner.app/_CodeSignature" 2>/dev/null || true
+          rm -f "$PAYLOAD/Runner.app/embedded.mobileprovision" 2>/dev/null || true
+
+          cd "$RUNNER_TEMP"
+          zip -qr "$IPA_DIR/$IPA_NAME" Payload
+          cd "$GITHUB_WORKSPACE"
+
+          echo "IPA built: $IPA_DIR/$IPA_NAME"
+          ls -lh "$IPA_DIR/$IPA_NAME"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShrimpSend-unsigned-ipa
+          path: build_output/ShrimpSend-unsigned.ipa
+          retention-days: 30

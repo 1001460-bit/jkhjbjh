@@ -1,0 +1,103 @@
+PODS:
+  - bonsoir_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - cryptography_flutter_plus (0.2.0):
+    - Flutter
+  - fl_shared_link (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_sharing_intent (1.0.1):
+    - Flutter
+  - flutter_webrtc (0.12.6):
+    - Flutter
+    - WebRTC-SDK (= 125.6422.06)
+  - irondash_engine_context (0.0.1):
+    - Flutter
+  - JNKeychain (0.1.4)
+  - mobile_device_identifier (0.0.1):
+    - Flutter
+    - JNKeychain
+  - network_info_plus (0.0.1):
+    - Flutter
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - saver_gallery (0.0.1):
+    - Flutter
+  - super_native_extensions (0.0.1):
+    - Flutter
+  - tobias (0.0.1):
+    - Flutter
+    - tobias/normal (= 0.0.1)
+  - tobias/normal (0.0.1):
+    - Flutter
+  - WebRTC-SDK (125.6422.06)
+
+DEPENDENCIES:
+  - bonsoir_darwin (from `.symlinks/plugins/bonsoir_darwin/darwin`)
+  - cryptography_flutter_plus (from `.symlinks/plugins/cryptography_flutter_plus/ios`)
+  - fl_shared_link (from `.symlinks/plugins/fl_shared_link/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_sharing_intent (from `.symlinks/plugins/flutter_sharing_intent/ios`)
+  - flutter_webrtc (from `.symlinks/plugins/flutter_webrtc/ios`)
+  - irondash_engine_context (from `.symlinks/plugins/irondash_engine_context/ios`)
+  - mobile_device_identifier (from `.symlinks/plugins/mobile_device_identifier/ios`)
+  - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - saver_gallery (from `.symlinks/plugins/saver_gallery/ios`)
+  - super_native_extensions (from `.symlinks/plugins/super_native_extensions/ios`)
+  - tobias (from `.symlinks/plugins/tobias/ios`)
+
+SPEC REPOS:
+  trunk:
+    - JNKeychain
+    - WebRTC-SDK
+
+EXTERNAL SOURCES:
+  bonsoir_darwin:
+    :path: ".symlinks/plugins/bonsoir_darwin/darwin"
+  cryptography_flutter_plus:
+    :path: ".symlinks/plugins/cryptography_flutter_plus/ios"
+  fl_shared_link:
+    :path: ".symlinks/plugins/fl_shared_link/ios"
+  Flutter:
+    :path: Flutter
+  flutter_sharing_intent:
+    :path: ".symlinks/plugins/flutter_sharing_intent/ios"
+  flutter_webrtc:
+    :path: ".symlinks/plugins/flutter_webrtc/ios"
+  irondash_engine_context:
+    :path: ".symlinks/plugins/irondash_engine_context/ios"
+  mobile_device_identifier:
+    :path: ".symlinks/plugins/mobile_device_identifier/ios"
+  network_info_plus:
+    :path: ".symlinks/plugins/network_info_plus/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  saver_gallery:
+    :path: ".symlinks/plugins/saver_gallery/ios"
+  super_native_extensions:
+    :path: ".symlinks/plugins/super_native_extensions/ios"
+  tobias:
+    :path: ".symlinks/plugins/tobias/ios"
+
+SPEC CHECKSUMS:
+  bonsoir_darwin: 29c7ccf356646118844721f36e1de4b61f6cbd0e
+  cryptography_flutter_plus: 44f4e9e4079395fcbb3e7809c0ac2c6ae2d9576f
+  fl_shared_link: 487f31c78f9d31afb0bd9b951eeb52fc8c3658aa
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_sharing_intent: 0c1e53949f09fa8df8ac2268505687bde8ff264c
+  flutter_webrtc: 57f32415b8744e806f9c2a96ccdb60c6a627ba33
+  irondash_engine_context: 8e58ca8e0212ee9d1c7dc6a42121849986c88486
+  JNKeychain: fb6cc9ec95959ba46cd95d0ee6f7a05e41da9f42
+  mobile_device_identifier: fc935973d028805e3e09428cc615ecfc22624e5a
+  network_info_plus: 16d8832ab43b7bc22b168d76fffcad9da35486d2
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  saver_gallery: af2d0c762dafda254e0ad025ef0dabd6506cd490
+  super_native_extensions: b763c02dc3a8fd078389f410bf15149179020cb4
+  tobias: 7bc370eaccba2e7c7c345902a4a47dc5916cf8bb
+  WebRTC-SDK: 79942c006ea64f6fb48d7da8a4786dfc820bc1db
+
+PODFILE CHECKSUM: b5bcf375d7cd3e2a779767389e6304498bda0948
+
+COCOAPODS: 1.16.2
