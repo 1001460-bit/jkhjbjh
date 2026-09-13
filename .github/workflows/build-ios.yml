@@ -88,7 +88,20 @@ jobs:
       - name: Build Flutter iOS (release, no codesign)
         working-directory: app
         run: |
-          flutter build ios --release --flavor intl --no-codesign
+          set +e
+          flutter build ios --release --flavor intl --no-codesign 2>&1 | tee /tmp/build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo ""
+            echo "============================================"
+            echo "=== EXTRACTED ERROR LINES (tail) ==="
+            echo "============================================"
+            grep -n -iE "(error|fatal|failed|cannot|undefined)" /tmp/build.log | grep -viE "warning|0 error" | tail -80
+            echo "============================================"
+            echo "=== FLUTTER VERSION ==="
+            flutter --version
+            exit $BUILD_EXIT
+          fi
 
       - name: Archive (unsigned)
         working-directory: app/ios
