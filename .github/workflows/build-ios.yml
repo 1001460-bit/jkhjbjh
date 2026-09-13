@@ -66,6 +66,25 @@ jobs:
             find /Users/runner/.pub-cache -type d -name "*bonsoir*" 2>/dev/null | head -10
           fi
 
+      - name: Fix pdfrx null-safety compilation errors
+        run: |
+          # pdfrx has null-safety issues with newer Dart SDKs: PdfFileCache?
+          # is accessed without null assertion. Patch in-place.
+          PDFRX_FILE=$(find /Users/runner/.pub-cache -name "pdf_file_cache.dart" -path "*pdfrx*" 2>/dev/null | head -1)
+          echo "Found pdfrx file: $PDFRX_FILE"
+          if [ -n "$PDFRX_FILE" ] && [ -f "$PDFRX_FILE" ]; then
+            echo "=== Before patch (lines 420-430) ==="
+            sed -n '420,430p' "$PDFRX_FILE"
+            # Add null assertion operator where cache is accessed
+            sed -i '' 's/cache\.blockSize/cache!.blockSize/g' "$PDFRX_FILE"
+            sed -i '' 's/cache\.read(/cache!.read(/g' "$PDFRX_FILE"
+            echo "=== After patch (lines 420-430) ==="
+            sed -n '420,430p' "$PDFRX_FILE"
+          else
+            echo "WARNING: pdf_file_cache.dart not found"
+            find /Users/runner/.pub-cache -name "pdf_file_cache.dart" 2>/dev/null || true
+          fi
+
       - name: Build Flutter iOS (release, no codesign)
         working-directory: app
         run: |
